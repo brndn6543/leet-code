@@ -6,15 +6,25 @@ struct ListNode {
 	ListNode *next;
 
 	ListNode() : val(0), next(nullptr) {}
-	ListNode(int x) : val(x), next(nullptr) {}
+	explicit ListNode(const int x) : val(x), next(nullptr) {}
 	ListNode(int x, ListNode *next) : val(x), next(next) {}
 };
 
+// Frees an entire list node by node. This corrects a memory
+// leak that leet code does not complain about, but exists.
+void deleteList(const ListNode* head) {
+	while (head) {
+		ListNode* next = head->next;
+		delete head;
+		head = next;
+	}
+}
+
 class Solution {
 public:
-	ListNode* addTwoNumbers(ListNode* l1, ListNode* l2) {
+	static ListNode* addTwoNumbers(const ListNode* l1, const ListNode* l2) {
 		// Create a placeholder head node.
-		ListNode* headPl = new ListNode(0);
+		auto* headPl = new ListNode(0);
 
 		// Tail is initially head.
 		ListNode* tail = headPl;
@@ -36,9 +46,11 @@ public:
 			}
 
 			// Tally.
-			int sum = x + y + carry;
+			const int sum = x + y + carry;
 			carry = sum / 10;
 
+			// tail always starts out pointing to the head
+			// placeholder.
 			tail->next = new ListNode(sum % 10);
 			tail = tail->next;
 
@@ -59,16 +71,16 @@ public:
 
 
 int main() {
-	ListNode* l1 = new ListNode(1);
+	auto* l1 = new ListNode(1);
 	l1->next = new ListNode(3);
 	l1->next->next = new ListNode(5);
 
-	ListNode* l2 = new ListNode(7);
+	auto* l2 = new ListNode(7);
 	l2->next = new ListNode(9);
 	l2->next->next = new ListNode(2);
 
 	Solution s;
-	ListNode* sum = s.addTwoNumbers(l1, l2);
+	ListNode* sum = Solution::addTwoNumbers(l1, l2);
 
 	cout << "Result: ";
 	for (ListNode* p = sum; p != nullptr; p = p->next) {
@@ -78,5 +90,11 @@ int main() {
 	}
 
 	cout << endl;
+
+	// Clean up the nodes to avoid leaks.
+	deleteList(sum);
+	deleteList(l1);
+	deleteList(l2);
+
 	return 0;
 }
